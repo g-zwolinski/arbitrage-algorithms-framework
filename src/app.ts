@@ -1,4 +1,4 @@
-import ArbitrageTriangleWithinExchange from "./algorithms/ArbitrageTriangleWithinExchangeParams";
+import ArbitrageTriangleWithinExchange from "./algorithms/ArbitrageTriangleWithinExchange";
 import Bot from "./Bot";
 import { log } from "./common/helpers";
 import config from "./config";

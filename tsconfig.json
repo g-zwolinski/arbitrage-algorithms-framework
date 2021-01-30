@@ -8,5 +8,8 @@
       "outDir": "dist",
       "resolveJsonModule": true
     },
-    "lib": ["es2015"]
+    "lib": ["es2015"],
+    "include": [
+        "src/**/*.ts"
+    ]
   }

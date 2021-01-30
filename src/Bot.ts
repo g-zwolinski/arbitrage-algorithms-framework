@@ -1,4 +1,4 @@
-import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchangeParams';
+import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchange';
 import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
 import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
 import { log, validationException } from './common/helpers';
