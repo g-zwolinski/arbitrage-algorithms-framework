@@ -85,6 +85,13 @@ export default class Bot {
 			}
 		} while (result)
     }
+
+    cycle(callback: any) {
+        let results;
+        do {
+            results = callback();
+        } while (results)
+    }
     
     validateExchange(exchange: string) {
         if (!this.config.exchangesToWatch.includes(exchange)) {

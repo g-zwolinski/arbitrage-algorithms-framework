@@ -8,11 +8,12 @@ import Algorithm from './Algorithm';
 import {AlgorithmCommonParams} from './Algorithm';
 
 export interface ArbitrageTriangleWithinExchangeParams extends AlgorithmCommonParams {
-    exchange: Exchange
+	exchange: Exchange,
+	validateMarkets: boolean
 }
 
 export default class ArbitrageTriangleWithinExchange extends Algorithm {
-	ALGORITHM_TYPE = 'ArbitrageTriangleWithinExchange';
+	static ALGORITHM_TYPE = 'ArbitrageTriangleWithinExchange';
 	DIRECTIONS_SEQUENCES = [
 		{
 			orders: [BUY, BUY, SELL],
@@ -25,19 +26,23 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	];
 	availableDirections: [];
 	bot: Bot;
+	exchange: Exchange;
 	markets: Market[];
 	availableBalances: Balances;
-	showWarnings = true;
+	showWarnings = false;
+	validateMarkets = true;
 	// every minimum amount in every symbol
 	minimum: {amount: Amount[], cost: Amount[], market: string}[];
 
 	constructor(params: ArbitrageTriangleWithinExchangeParams) {
 		super();
 
-		const {bot, markets, balances, showWarnings} = {...params};
+		const {bot, markets, balances, showWarnings, validateMarkets, exchange} = {...params};
 		this.bot = bot;
+		this.exchange = exchange;
 		this.bot.printProfileTime();
 		this.showWarnings = showWarnings;
+		this.validateMarkets = validateMarkets;
 		this.validate(markets, balances);
 		this.bot.printProfileTime();
 		this.markets = markets;
@@ -46,18 +51,18 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 		this.onRun = this.onArbitrageTriangleWithinExchangeRun;
 	}
 
-	validateMarkets(markets: Market[]) {
+	static validateMarkets(markets: Market[]) {
 		if (markets.length !== 3) {
 			this.throwValidationException('InvalidMarketsLength (should be equal to 3)');
 		}
 
-		if (markets[0].quote !== markets[1].base) {
-			// @TODO: consider getting rid of this
-			log('InvalidMarketsOrder (trying to change)', 'warn', this.showWarnings);
-			const temp = markets[1];
-			markets[1] = markets[2];
-			markets[2] = temp;
-		}
+		// if (markets[0].quote !== markets[1].base) {
+		// 	// @TODO: consider getting rid of this
+		// 	log('InvalidMarketsOrder (trying to change)', 'warn', this.showWarnings);
+		// 	const temp = markets[1];
+		// 	markets[1] = markets[2];
+		// 	markets[2] = temp;
+		// }
 
 		if (markets[0].quote !== markets[1].base) {
 			this.throwValidationException('InvalidMarkets (first market quote should be secound market base)');
@@ -74,9 +79,11 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 		if (markets[2].base !== markets[0].base) {
 			this.throwValidationException('InvalidMarkets (third market base should be first market base)');
 		}
+
+		return true;
 	}
 
-	throwValidationException(message) {
+	static throwValidationException(message) {
 		throw validationException(this.ALGORITHM_TYPE, message);
 	}
 
@@ -89,14 +96,16 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	}
 
 	validate(markets: Market[], balances: Balances) {
-		this.validateMarkets(markets);
+		if (this.validateMarkets) {
+			ArbitrageTriangleWithinExchange.validateMarkets(markets);
+		}
 		this.validateBalacnes(markets, balances);
 	}
 
 	onArbitrageTriangleWithinExchangeRun: () => boolean = () => {
 		this.bot.printProfileTime();
 		// @TODO: onRun
-		console.log('todo');
+		console.log(this.exchange.id, 'todo');
 		// for test purpose
 		return true;
 	};
