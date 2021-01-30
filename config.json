@@ -1,0 +1,18 @@
+{
+    "profile": false,
+    "exchangesToWatch": ["example"],
+    "exchangeOptions": {
+        "example": {
+        }
+    },
+    "defaultExchangeOptions": {
+        "enableRateLimit": true,
+        "proxy": false
+    },
+    "keys": {
+        "example": {
+            "apiKey": "123456789ABC", 
+            "secret": "123456789DEF"
+        }
+    }
+}
