@@ -12,7 +12,7 @@ MARKET: BASE/QUOTE
     /|        _\| D1	 
    /            \ 		 
   /____\____/____\	
- M2	   /    \	 M1		 
+ M2    /    \    M1		 
 
 D - DIRECTION,			 
 M - MARKET, 

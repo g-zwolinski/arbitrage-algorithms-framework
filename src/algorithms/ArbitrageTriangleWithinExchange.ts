@@ -27,7 +27,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	availableDirections: [];
 	bot: Bot;
 	exchange: Exchange;
-	markets: Market[];
+	marketsTriplet: Market[];
 	availableBalances: Balances;
 	showWarnings = false;
 	validateMarkets = true;
@@ -45,7 +45,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 		this.validateMarkets = validateMarkets;
 		this.validate(markets, balances);
 		this.bot.printProfileTime();
-		this.markets = markets;
+		this.marketsTriplet = markets;
 		this.availableBalances = balances;
 
 		this.onRun = this.onArbitrageTriangleWithinExchangeRun;
@@ -55,14 +55,6 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 		if (markets.length !== 3) {
 			this.throwValidationException('InvalidMarketsLength (should be equal to 3)');
 		}
-
-		// if (markets[0].quote !== markets[1].base) {
-		// 	// @TODO: consider getting rid of this
-		// 	log('InvalidMarketsOrder (trying to change)', 'warn', this.showWarnings);
-		// 	const temp = markets[1];
-		// 	markets[1] = markets[2];
-		// 	markets[2] = temp;
-		// }
 
 		if (markets[0].quote !== markets[1].base) {
 			this.throwValidationException('InvalidMarkets (first market quote should be secound market base)');
@@ -76,11 +68,43 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 			this.throwValidationException('InvalidMarkets (third market base should be first market base)');
 		}
 
-		if (markets[2].base !== markets[0].base) {
-			this.throwValidationException('InvalidMarkets (third market base should be first market base)');
-		}
-
 		return true;
+	}
+
+	static getValidatedTripletsOnExchange(exchange: Exchange, showLoadingStatus: boolean = true) {
+        const validatedTriplets: string[][] = [];
+        let marketsNumber = Object.entries(exchange.markets).length;
+        let i = 0;
+
+        for (let marketA in exchange.markets) {
+			if (showLoadingStatus) {
+				log(`Loading ${exchange.id} ArbitrageTriangleWithinExchange ${((i / marketsNumber) * 100).toFixed()}%`);
+			}
+            i++;
+            for (let marketB in exchange.markets) {
+                for (let marketC in exchange.markets) {
+					if(marketA === marketB || marketA === marketC || marketB === marketC) { continue; }
+					
+					const exchangeMarketA = exchange.markets[marketA];
+					const exchangeMarketB = exchange.markets[marketB];
+					const exchangeMarketC = exchange.markets[marketC];
+
+					if(!exchangeMarketA.active || !exchangeMarketB.active || !exchangeMarketC.active) { continue; }
+					
+                    try {
+                        if (ArbitrageTriangleWithinExchange.validateMarkets([
+                            exchange.markets[marketA],
+                            exchange.markets[marketB],
+                            exchange.markets[marketC]
+                        ])) {
+                            validatedTriplets.push([marketA, marketB, marketC]);
+                        }
+                    } catch {}
+                }
+            }
+        }
+        
+		return validatedTriplets;
 	}
 
 	static throwValidationException(message) {
@@ -103,11 +127,11 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	}
 
 	onArbitrageTriangleWithinExchangeRun: () => boolean = () => {
-		this.bot.printProfileTime();
+		// this.bot.printProfileTime();
 		// @TODO: onRun
-		console.log(this.exchange.id, 'todo');
+		// console.log(this.exchange.id, 'todo');
 		// for test purpose
-		return true;
+		return false;
 	};
 
 	fees(market: Market, amount: number, orderType: OrderType) {

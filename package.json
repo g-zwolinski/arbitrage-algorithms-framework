@@ -9,7 +9,7 @@
     "start:dev": "nodemon",
     "run": "ts-node ./src/app.ts",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "lint-and-fix": "npm run lint -- --fix",
+    "lint:fix": "npm run lint -- --fix",
     "test": "npx jest"
   },
   "keywords": [],

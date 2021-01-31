@@ -1,7 +1,7 @@
 import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchange';
 import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
 import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
-import { log, validationException } from './common/helpers';
+import { errorLogTemplate, log, validationException } from './common/helpers';
 import ccxt, { Balances, Exchange } from 'ccxt';
 
 export interface BotConfig {
@@ -39,7 +39,7 @@ export default class Bot {
     balances: {
         [key: string]: Balances
     } = {};
-	// check if market is active before running algoritm
+
 	constructor(config: BotConfig) {
         this.config = config;
     }
@@ -62,36 +62,38 @@ export default class Bot {
 
                 await this.fetchBalance(this.exchanges[exchange]).then(balance => {
                     this.balances[exchange] = balance;
-                }, err => log(`${err.name} ${err.message}`));
+                }, err => log(errorLogTemplate(err)));
             }
         })
     }
 
-	// add triggering by socket (additional lib per exchange, compatible with cctx)
-	// crawl over markets by default
-
-	runAlgorithm(
+	async runAlgorithm(
 		algoritm: ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges
 	) {
-		// @TODO: consider:
-		// moving to new CPU worker (optionally behind proxy - new keys needed? propably not in case proxy - before running algo we use public key) if there is no other already running with given exchanges, otherwise add to queue
-
 		let result;
 		do {
 			try {
 				result = algoritm.run();
 			} catch (e) {
-				console.log(e)
+				log(errorLogTemplate(e));
 			}
-		} while (result)
+        } while (result)
     }
 
-    cycle(callback: any) {
-        let results;
-        do {
-            results = callback();
-        } while (results)
-    }
+	cycle: (
+		toIterate: any[], 
+        algorithm: (params) => ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges,
+        paramsFromElement: (element: any) => any,
+        onCycleRun: () => any
+	) => boolean = (toIterate, algorithm, paramsFromElement, onCycleRun = () => null) => {
+        onCycleRun();
+
+		toIterate.forEach(async element => {
+            log(`${element}`);
+            await this.runAlgorithm(algorithm(paramsFromElement(element)));
+		});
+		return this.cycle(toIterate, algorithm, paramsFromElement, onCycleRun);
+	}
     
     validateExchange(exchange: string) {
         if (!this.config.exchangesToWatch.includes(exchange)) {
@@ -100,7 +102,7 @@ export default class Bot {
     }
 
     async fetchBalanceAsync(exchange: Exchange) {
-        let balance;
+        let balance: Balances;
     
         try {
             balance = await exchange.fetchBalance();

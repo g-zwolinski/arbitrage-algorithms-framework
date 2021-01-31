@@ -1,3 +1,5 @@
+export const errorLogTemplate = (e: Error) => `${e.name} ${e.message}`;
+
 export function log(message, type: 'log' | 'warn' = 'log', toggle = true) {
 	if (!toggle) { return; }
 	console[type](message);

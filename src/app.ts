@@ -1,6 +1,6 @@
-import ArbitrageTriangleWithinExchange from "./algorithms/ArbitrageTriangleWithinExchange";
+import ArbitrageTriangleWithinExchange, { ArbitrageTriangleWithinExchangeParams } from "./algorithms/ArbitrageTriangleWithinExchange";
 import Bot from "./Bot";
-import { log } from "./common/helpers";
+import { errorLogTemplate, log } from "./common/helpers";
 import config from "./config";
 // ccxt.d.ts
 
@@ -8,67 +8,45 @@ const bot = new Bot(config);
 bot.init();
 bot.printProfileTime();
 
+// add triggering by socket (additional lib per exchange, compatible with cctx)
+// crawl over markets by default
+
 Object.entries(bot.exchanges).forEach(async ([key, exchange]) => {
+    // @TODO: consider:
+    // moving to new CPU worker (optionally behind proxy) if there is no other already running with given exchanges, otherwise add to queue   
+
     try {
         await exchange.loadMarkets();
-        const validatedTriplets: string[][] = [];
-        let marketsNumber = Object.entries(exchange.markets).length;
-        let i = 0;
-
-        for (let marketA in exchange.markets) {
-            log(`Loading ${exchange.id} ArbitrageTriangleWithinExchange ${((i / marketsNumber) * 100).toFixed()}%`);
-            i++;
-            for (let marketB in exchange.markets) {
-                for (let marketC in exchange.markets) {
-                    if(marketA === marketB || marketA === marketC || marketB === marketC) { continue; }
-                    try {
-                        if (ArbitrageTriangleWithinExchange.validateMarkets([
-                            exchange.markets[marketA],
-                            exchange.markets[marketB],
-                            exchange.markets[marketC]
-                        ])) {
-                            validatedTriplets.push([marketA, marketB, marketC]);
-                        }
-                    } catch {}
-                }
-            }
-        }
+        const validatedTriplets = ArbitrageTriangleWithinExchange.getValidatedTripletsOnExchange(exchange);
 
         log(`Found ${validatedTriplets.length} ArbitrageTriangleWithinExchange triplets on ${exchange.id}`);
         validatedTriplets.forEach((triplet, index) => log([index + 1, ...triplet].join(' ')));
 
-        bot.cycle(async () => {
-            validatedTriplets.forEach(triplet => {
-                let results;
-                do {
-                    results = false;
-                    try {
-                        results = bot.runAlgorithm(new ArbitrageTriangleWithinExchange({
-                            exchange: exchange,
-                            bot: bot,
-                            markets: [
-                                exchange.markets[triplet[0]],
-                                exchange.markets[triplet[1]],
-                                exchange.markets[triplet[2]]
-                            ],
-                            balances: bot.balances[key],
-                            showWarnings: true,
-                            validateMarkets: false
-                        }));
-                    } catch (err) {
-                        log(`${err.name} ${err.message}`);
-                        bot.printProfileTime();
-                    }
-                } while (results)
-            });
-        });
-        bot.printProfileTime();
+        bot.cycle(
+            validatedTriplets, 
+            (params: ArbitrageTriangleWithinExchangeParams) => {
+                return new ArbitrageTriangleWithinExchange(params)
+            }, element => ({
+                exchange: exchange,
+                bot: bot,
+                markets: [
+                    exchange.markets[element[0]],
+                    exchange.markets[element[1]],
+                    exchange.markets[element[2]]
+                ],
+                balances: bot.balances[key],
+                showWarnings: true,
+                validateMarkets: false
+            }),
+            () => {
+                log( `Cycle ${exchange.id} ArbitrageTriangleWithinExchange`)
+            }
+        );
     } catch (err) {
-        log(`${err.name} ${err.message}`);
+        log(errorLogTemplate(err));
         bot.printProfileTime();
     }
 });
-
 
 // @TODO: add checking
 // {
