@@ -3,10 +3,12 @@ import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
 import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
 import { errorLogTemplate, log, validationException } from './common/helpers';
 import ccxt, { Balances, Exchange } from 'ccxt';
+import { resolve } from 'path';
 
 export interface BotConfig {
     profile: boolean;
     exchangesToWatch: string[];
+    orderBookLimit: number;
     exchangeOptions: {
         [key: string /* exchange */]: any
     },
@@ -39,6 +41,7 @@ export default class Bot {
     balances: {
         [key: string]: Balances
     } = {};
+    cycleIndex = 0;
 
 	constructor(config: BotConfig) {
         this.config = config;
@@ -49,53 +52,111 @@ export default class Bot {
         console.log(new Date().toLocaleString());
     }
     
-    init() {
-        ccxt.exchanges.forEach(async (exchange: string) => {
-            if (this.config.exchangesToWatch.includes(exchange)) {
-                this.validateExchange(exchange);
-                this.exchanges[exchange] = new(ccxt)[exchange]({
-                    ...this.config.defaultExchangeOptions,
-                    ...this.config.exchangeOptions[exchange]
-                });
-                this.exchanges[exchange].apiKey = this.config.keys[exchange].apiKey;
-                this.exchanges[exchange].secret = this.config.keys[exchange].secret;
-
-                await this.fetchBalance(this.exchanges[exchange]).then(balance => {
-                    this.balances[exchange] = balance;
-                }, err => log(errorLogTemplate(err)));
-            }
+    async init() {
+        const self = this;
+        return new Promise<void>(async (resolve, reject) => {
+            await Promise.all (ccxt.exchanges.map ((exchange) => (async function () {
+                if (self.config.exchangesToWatch.includes(exchange)) {
+                    self.validateExchange(exchange);
+                    self.exchanges[exchange] = new (ccxt)[exchange]({
+                        ...self.config.defaultExchangeOptions,
+                        ...self.config.exchangeOptions[exchange]
+                    });
+                    self.exchanges[exchange].apiKey = self.config.keys[exchange].apiKey;
+                    self.exchanges[exchange].secret = self.config.keys[exchange].secret;
+    
+                    try {
+                        self.balances[exchange] = await self.fetchBalance(self.exchanges[exchange]);
+                    } catch (err) {
+                        log(errorLogTemplate(err));
+                    }
+                }
+            })()));
+            resolve();
         })
     }
 
 	async runAlgorithm(
 		algoritm: ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges
 	) {
-		let result;
-		do {
-			try {
-				result = algoritm.run();
-			} catch (e) {
-				log(errorLogTemplate(e));
-			}
-        } while (result)
+        return new Promise(resolve => {
+            algoritm.run().then(res => resolve(res));
+        }) 
+        // console.log(results)
+        // return results;
     }
 
+    async runAlgorithmOnIteratedElement(elementsArray, algorithm, paramsFromElement) {
+        const element = elementsArray[this.cycleIndex];
+        log(`${element}`);
+
+        let result = await this.runAlgorithm(algorithm(paramsFromElement(element)));
+        if (!result) {
+            this.cycleIndex = this.cycleIndex + 1;
+        }
+
+        // await this.runAlgorithm(algorithm(paramsFromElement(element)));
+
+        // await new Promise(async (resolve) => {
+        //     let result = true;
+        //     while (result) {
+        //         result = await this.runAlgorithm(algorithm(paramsFromElement(element))) ? true : false;
+        //     }
+        // })
+
+        // let result = await this.runAlgorithm(algorithm(paramsFromElement(element)));
+        // log(`${element} ${result}`);
+        // if (result) {
+        //     await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement);
+        // }
+
+        // await new Promise(async (resolve, reject) => {
+        //     let result = true;
+        //     while(result) {
+        //         result = await this.runAlgorithm(algorithm(paramsFromElement(element))) ? true : false;
+        //         if (result) {
+        //             await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement);
+        //         }
+        //         log(result);
+        //     }
+        //     resolve(true);
+        //  });
+
+        // await Promise.all([async (res) => {
+        //     let result = false;
+        //     do {
+        //         await Promise.all([this.runAlgorithm(algorithm(paramsFromElement(element))).then(res => {
+        //             result = res;
+        //         })]);
+        //     } while(!result)
+        //     res(true);
+        // }])
+    }
+    
 	cycle: (
 		toIterate: any[], 
         algorithm: (params) => ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges,
         paramsFromElement: (element: any) => any,
         onCycleRun: () => any
-	) => boolean = (toIterate, algorithm, paramsFromElement, onCycleRun = () => null) => {
+	) => void = async (toIterate, algorithm, paramsFromElement, onCycleRun = () => null) => {
+        this.cycleIndex = 0;
+        const cycleMaxIndex = toIterate.length;
         onCycleRun();
 
-		toIterate.forEach(async element => {
-            log(`${element}`);
-            await this.runAlgorithm(algorithm(paramsFromElement(element)));
-		});
-		return this.cycle(toIterate, algorithm, paramsFromElement, onCycleRun);
+        // @TODO
+
+        do {
+            await this.runAlgorithmOnIteratedElement(toIterate, algorithm, paramsFromElement);
+        } while (this.cycleIndex < cycleMaxIndex)
+
+		// toIterate.forEach(async element => await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement));
+		process.nextTick(() => {
+            this.cycle(toIterate, algorithm, paramsFromElement, onCycleRun)
+        });
 	}
     
     validateExchange(exchange: string) {
+        // @TODO: add validaiton (check if exchange has every required method)
         if (!this.config.exchangesToWatch.includes(exchange)) {
             validationException('EXCHANGE', `${exchange} IS IGNORED`);
         }

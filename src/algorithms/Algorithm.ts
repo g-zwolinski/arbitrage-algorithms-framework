@@ -9,9 +9,9 @@ export interface AlgorithmCommonParams {
 }
 
 export default class Algorithm {
-	onRun: (params: any) => boolean = () => false;
+	onRun: (params: any) => Promise<any> = () => new Promise(() => false);
 
-	run = (params?: any): boolean => {
-		return this.onRun(params);
+	run = async (params?: any): Promise<boolean> => {
+		return await this.onRun(params);
 	}
 }

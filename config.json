@@ -1,6 +1,7 @@
 {
     "profile": false,
     "exchangesToWatch": ["example"],
+    "orderBookLimit": 1000,
     "exchangeOptions": {
         "example": {
         }
