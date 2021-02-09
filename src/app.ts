@@ -67,8 +67,9 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
     });
 }
 
-
-// po 2 markety na 1 exchange
+// po 2 markety na 1 exchange, 1 transfer miedzy gieldami
+// 2 markety na 1. exchange, 1 na 2. exchange, 1 transfer miedzy gieldami
+// po 1 market na 1 exchange, 1 transfer miedzy gieldami
 
 // @TODO: add checking
 // {

@@ -82,8 +82,6 @@ export default class Bot {
         return new Promise(resolve => {
             algoritm.run().then(res => resolve(res));
         }) 
-        // console.log(results)
-        // return results;
     }
 
     async runAlgorithmOnIteratedElement(elementsArray, algorithm, paramsFromElement) {
@@ -94,43 +92,6 @@ export default class Bot {
         if (!result) {
             this.cycleIndex = this.cycleIndex + 1;
         }
-
-        // await this.runAlgorithm(algorithm(paramsFromElement(element)));
-
-        // await new Promise(async (resolve) => {
-        //     let result = true;
-        //     while (result) {
-        //         result = await this.runAlgorithm(algorithm(paramsFromElement(element))) ? true : false;
-        //     }
-        // })
-
-        // let result = await this.runAlgorithm(algorithm(paramsFromElement(element)));
-        // log(`${element} ${result}`);
-        // if (result) {
-        //     await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement);
-        // }
-
-        // await new Promise(async (resolve, reject) => {
-        //     let result = true;
-        //     while(result) {
-        //         result = await this.runAlgorithm(algorithm(paramsFromElement(element))) ? true : false;
-        //         if (result) {
-        //             await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement);
-        //         }
-        //         log(result);
-        //     }
-        //     resolve(true);
-        //  });
-
-        // await Promise.all([async (res) => {
-        //     let result = false;
-        //     do {
-        //         await Promise.all([this.runAlgorithm(algorithm(paramsFromElement(element))).then(res => {
-        //             result = res;
-        //         })]);
-        //     } while(!result)
-        //     res(true);
-        // }])
     }
     
 	cycle: (
@@ -143,13 +104,10 @@ export default class Bot {
         const cycleMaxIndex = toIterate.length;
         onCycleRun();
 
-        // @TODO
-
         do {
             await this.runAlgorithmOnIteratedElement(toIterate, algorithm, paramsFromElement);
         } while (this.cycleIndex < cycleMaxIndex)
 
-		// toIterate.forEach(async element => await this.runAlgorithmOnIteratedElement(element, algorithm, paramsFromElement));
 		process.nextTick(() => {
             this.cycle(toIterate, algorithm, paramsFromElement, onCycleRun)
         });

@@ -200,36 +200,21 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 
 	async getOrderBooks(){
 		log('getOrderBooks');
-		// const self = this;
 		await Promise.all(this.marketsTriplet.map(async market => {
 			log('getOrderBook ' + this.exchange.name);
-			// try {
-				// log('fetchL2OrderBookA' + market.symbol);
-				let orderbook = await this.exchange.fetchL2OrderBook(market.symbol, this.bot.config.orderBookLimit)
-				this.orderBooks[market.symbol] = {[ASKS]: orderbook[ASKS], [BIDS]: orderbook[BIDS]};
-				log('fetchL2OrderBook ' + market.symbol + ' ' + this.orderBooks[market.symbol]);
-				// await this.exchange.fetchL2OrderBook(market.symbol, this.bot.config.orderBookLimit).then(res => {
-				// 	this.orderBooks[market.symbol] = {[ASKS]: res[ASKS], [BIDS]: res[BIDS]};
-				// 	log(this.orderBooks[market.symbol]);
-				// });
-				// this.orderBooks[market.symbol] = orderbook;
-				// log(orderbook[market.symbol][BUY][0]);
-		// 	} catch (err) {
-		// 		log(`getOrderBooks ${this.exchange.id} ArbitrageTriangleWithinExchange ${market.symbol} ${err.name} ${err.message}`);
-		// 	}
-		}));
+			let orderbook = await this.exchange.fetchL2OrderBook(market.symbol, this.bot.config.orderBookLimit)
+			this.orderBooks[market.symbol] = {[ASKS]: orderbook[ASKS], [BIDS]: orderbook[BIDS]};
+			log('fetchL2OrderBook ' + market.symbol + ' ' + this.orderBooks[market.symbol]);
+		}))
 	}
 
 	async onArbitrageTriangleWithinExchangeRun() {
 		this.bot.printProfileTime();
-		// @TODO: onRun
-		// console.log(this.exchange.id, 'todo');
-		// for test purpose
-		// log(this.orderBooks[this.marketsTriplet[0].symbol][0])
 
 		return new Promise(async resolve => {
 			log(`onArbitrageTriangleWithinExchangeRun ${this.marketsTriplet.map(market => market.symbol).join(' ')}`)
 			await this.getOrderBooks();
+			// console.log(this.orderBooks[this.marketsTriplet[0].symbol].asks[0], this.orderBooks[this.marketsTriplet[0].symbol].bids[0])
 			resolve(true);
 		})
 	};
