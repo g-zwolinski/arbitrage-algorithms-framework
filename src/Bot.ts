@@ -88,7 +88,14 @@ export default class Bot {
         const element = elementsArray[this.cycleIndex];
         log(`${element}`);
 
-        let result = await this.runAlgorithm(algorithm(paramsFromElement(element)));
+        let runningAlgorithm;
+        try {
+            runningAlgorithm = algorithm(paramsFromElement(element));
+        } catch (err) {
+            log(errorLogTemplate(err));
+        }
+
+        let result = runningAlgorithm ? await this.runAlgorithm(runningAlgorithm) : false;
         if (!result) {
             this.cycleIndex = this.cycleIndex + 1;
         }
@@ -126,7 +133,7 @@ export default class Bot {
         try {
             balance = await exchange.fetchBalance();
         } catch (err) {
-            log(err);
+            log(errorLogTemplate(err));
             await exports.fetchBalance(exchange);
         }
         return balance;
