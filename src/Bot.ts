@@ -1,9 +1,10 @@
-import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchange';
-import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
-import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
+// import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchange';
+// import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
+// import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
 import { errorLogTemplate, log, validationException } from './common/helpers';
 import ccxt, { Balances, Exchange } from 'ccxt';
-import { resolve } from 'path';
+// import { resolve } from 'path';
+import Algorithm from './algorithms/Algorithm';
 
 export interface BotConfig {
     profile: boolean;
@@ -18,7 +19,13 @@ export interface BotConfig {
             apiKey: string;
             secret: string;
         }
-    }
+    },
+    currenciesToWatch: string[],
+
+    // ccxt calculate_fees correction
+    zeroesFeesCorrection: boolean;
+    correctAllFees: boolean;
+    feesRoundType: 'ceil' | 'floor' |'round';
 }
 
 interface ExchangeBalance {
@@ -49,7 +56,7 @@ export default class Bot {
     
 	printProfileTime() {
         if (!this.config.profile) { return; }
-        console.log(new Date().toLocaleString());
+        console.log("\x1b[47m\x1b[30m%s\x1b[0m", new Date().toLocaleString());
     }
     
     async init() {
@@ -77,16 +84,16 @@ export default class Bot {
     }
 
 	async runAlgorithm(
-		algoritm: ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges
+		algorithm: Algorithm
 	) {
         return new Promise(resolve => {
-            algoritm.run().then(res => resolve(res));
+            algorithm.run().then(res => resolve(res));
         }) 
     }
 
     async runAlgorithmOnIteratedElement(elementsArray, algorithm, paramsFromElement) {
         const element = elementsArray[this.cycleIndex];
-        log(`${element}`);
+        log(`\x1b[42mRUNNING: ${element}\x1b[0m`);
 
         let runningAlgorithm;
         try {
@@ -103,7 +110,7 @@ export default class Bot {
     
 	cycle: (
 		toIterate: any[], 
-        algorithm: (params) => ArbitrageTriangleWithinExchange | ArbitrageBetweenExchanges | ArbitrageTriangularBetweenExchanges,
+        algorithm: (params) => Algorithm,
         paramsFromElement: (element: any) => any,
         onCycleRun: () => any
 	) => void = async (toIterate, algorithm, paramsFromElement, onCycleRun = () => null) => {

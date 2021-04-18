@@ -31,6 +31,14 @@ Direction 1:
 M0 SELL (C0 for C1) | -C0 +C1
 M1 SELL (C1 for C2) | -C1 +C2
 M2 BUY (C0 for C2)  | +C0 -C2
+
+Assumptions:
+- don't use BNB for fees on Binance
+- every exchange has to handle limit orders
+
+Known issues:
+- to fix: handle minimum fees on Bleutrade
+
 ```
 
 

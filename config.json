@@ -15,5 +15,9 @@
             "apiKey": "123456789ABC", 
             "secret": "123456789DEF"
         }
-    }
+    },
+    "currenciesToWatch": [],
+    "zeroesFeesCorrection": true,
+    "correctAllFees": false,
+    "feesRoundType": "ceil"
 }

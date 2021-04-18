@@ -6,10 +6,10 @@ import config from "./config";
 
 process
 .on('unhandledRejection', (reason, p) => {
-    console.error(reason, 'Unhandled Rejection at Promise', p);
+    console.error(reason, '\x1b[34mUnhandled Rejection at Promise\x1b[0m', p);
 })
 .on('uncaughtException', err => {
-    console.error(err, 'Uncaught Exception thrown');
+    console.error(err, '\x1b[34mUncaught Exception thrown\x1b[0m');
     process.exit(1);
 });
 
@@ -35,10 +35,11 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
     Object.entries(bot.exchanges).forEach(async ([key, exchange]) => {
         try {
             await exchange.loadMarkets();
-            const validatedTriplets = ArbitrageTriangleWithinExchange.getValidatedTripletsOnExchange(exchange);
+            const validatedTriplets = ArbitrageTriangleWithinExchange.getValidatedTripletsOnExchange(exchange, config.currenciesToWatch);
 
-            log(`Found ${validatedTriplets.length} ArbitrageTriangleWithinExchange triplets on ${exchange.id}`);
-            validatedTriplets.forEach((triplet, index) => log([index + 1, ...triplet].join(' ')));
+            log(`\x1b[32mFound ${validatedTriplets.length} ArbitrageTriangleWithinExchange triplets on ${exchange.id}\x1b[0m`);
+            console.table(validatedTriplets)
+            // validatedTriplets.forEach((triplet, index) => log([index + 1, ...triplet].join(' ')));
 
             bot.cycle(
                 validatedTriplets, 
@@ -57,7 +58,7 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
                     validateMarkets: false
                 }),
                 () => {
-                    log( `Cycle ${exchange.id} ArbitrageTriangleWithinExchange`)
+                    log( `\x1b[32mCycle ${exchange.id} ArbitrageTriangleWithinExchange\x1b[0m`)
                 }
             );
         } catch (err) {
