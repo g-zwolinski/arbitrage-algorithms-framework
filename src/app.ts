@@ -13,12 +13,11 @@ process
     process.exit(1);
 });
 
-
 // add triggering by socket (additional lib per exchange, compatible with cctx)
 // crawl over markets by default
 
 // @TODO: consider:
-// moving to new CPU worker (optionally behind proxy) if there is no other already running with given exchanges, otherwise add to queue   
+// moving to new CPU worker (optionally behind robin rounded proxy) if there is no other already running with given exchanges, otherwise add to queue   
 
 const bot = new Bot(config);
 startBot();
@@ -54,7 +53,7 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
                         exchange.markets[element[2]]
                     ],
                     balances: bot.balances[key],
-                    showWarnings: false,
+                    showWarnings: bot.config.logDetails,
                     validateMarkets: false
                 }),
                 () => {
@@ -68,9 +67,10 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
     });
 }
 
-// po 2 markety na 1 exchange, 1 transfer miedzy gieldami
-// 2 markety na 1. exchange, 1 na 2. exchange, 1 transfer miedzy gieldami
-// po 1 market na 1 exchange, 1 transfer miedzy gieldami
+// todo
+// 2 markets per exchange, 1 transfer between exchanges
+// 2 markets on 1. exchange, 1 on 2. exchange, 1 transfer between exchanges
+// 1 market per exchange, 1 transfer between exchanges
 
 // @TODO: add checking
 // {

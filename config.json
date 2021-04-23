@@ -1,5 +1,7 @@
 {
     "profile": false,
+    "logDetails": false,
+    "logAdditionalDetails": false,
     "exchangesToWatch": ["example"],
     "orderBookLimit": 1000,
     "exchangeOptions": {
@@ -17,6 +19,7 @@
         }
     },
     "currenciesToWatch": [],
+    "feesRate": 0.001,
     "zeroesFeesCorrection": true,
     "correctAllFees": false,
     "feesRoundType": "ceil"

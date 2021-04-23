@@ -1,3 +1,6 @@
+# Arbitrage Algorithms Framework
+on top of CCXT
+
 ArbitrageTriangleWithinExchange
 ===================================
 ```

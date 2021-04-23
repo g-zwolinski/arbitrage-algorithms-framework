@@ -1,28 +1,28 @@
-// import ArbitrageTriangleWithinExchange from './algorithms/ArbitrageTriangleWithinExchange';
-// import ArbitrageBetweenExchanges from './algorithms/ArbitrageBetweenExchanges';
-// import ArbitrageTriangularBetweenExchanges from './algorithms/ArbitrageTriangularBetweenExchanges';
 import { errorLogTemplate, log, validationException } from './common/helpers';
 import ccxt, { Balances, Exchange } from 'ccxt';
-// import { resolve } from 'path';
 import Algorithm from './algorithms/Algorithm';
 
 export interface BotConfig {
-    profile: boolean;
-    exchangesToWatch: string[];
-    orderBookLimit: number;
-    exchangeOptions: {
-        [key: string /* exchange */]: any
-    },
-    defaultExchangeOptions: any;
     keys: {
         [key: string /* exchange */]: {
             apiKey: string;
             secret: string;
         }
-    },
-    currenciesToWatch: string[],
+    };
+    exchangesToWatch: string[];
+    orderBookLimit: number;
+    exchangeOptions: {
+        [key: string /* exchange */]: any
+    };
+    defaultExchangeOptions: any;
+    currenciesToWatch: string[];
+
+    profile: boolean;
+    logDetails: boolean;
+    logAdditionalDetails: boolean;
 
     // ccxt calculate_fees correction
+    feesRate: number;
     zeroesFeesCorrection: boolean;
     correctAllFees: boolean;
     feesRoundType: 'ceil' | 'floor' |'round';
@@ -56,7 +56,7 @@ export default class Bot {
     
 	printProfileTime() {
         if (!this.config.profile) { return; }
-        console.log("\x1b[47m\x1b[30m%s\x1b[0m", new Date().toLocaleString());
+        console.log("\x1b[47m\x1b[30m%s\x1b[0m", new Date().toLocaleString().padEnd(100, ' '));
     }
     
     async init() {
@@ -93,7 +93,7 @@ export default class Bot {
 
     async runAlgorithmOnIteratedElement(elementsArray, algorithm, paramsFromElement) {
         const element = elementsArray[this.cycleIndex];
-        log(`\x1b[42mRUNNING: ${element}\x1b[0m`);
+        console.log('\x1b[45m%s\x1b[0m', `RUNNING: ${element}`.padEnd(100, ' '));
 
         let runningAlgorithm;
         try {
