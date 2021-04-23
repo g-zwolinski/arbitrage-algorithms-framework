@@ -1,4 +1,4 @@
-# Arbitrage Algorithms Framework
+# Arbitrage Algorithms Framework Prototype
 on top of CCXT
 
 ArbitrageTriangleWithinExchange

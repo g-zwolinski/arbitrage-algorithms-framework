@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "start": "tsc && node dist/app.js",
+    "start": "tsc && node dist/example.js",
     "start:dev": "nodemon",
-    "run": "ts-node ./src/app.ts",
+    "run": "ts-node ./src/example.ts",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
     "test": "npx jest"

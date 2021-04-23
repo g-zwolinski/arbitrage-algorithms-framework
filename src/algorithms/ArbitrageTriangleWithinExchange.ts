@@ -1,7 +1,7 @@
-import { Balances, Exchange, Market, MinMax, OrderBook } from 'ccxt';
+import { Balances, Exchange, Market, MinMax } from 'ccxt';
 import Bot from '../Bot';
-import { BUY, SELL, ASKS, BIDS, bidsOrAsksByBuyOrSell, buyOrSellByBidsOrAsks } from '../common/constants';
-import { errorLogTemplate, floatRound, log, validationException } from '../common/helpers';
+import { BUY, SELL, ASKS, BIDS, bidsOrAsksByBuyOrSell } from '../common/constants';
+import { floatRound, log, validationException } from '../common/helpers';
 import { Amount } from '../common/interfaces';
 import { BidsOrAsks, BuyOrSell, OrderType } from '../common/types';
 import Algorithm from './Algorithm';
@@ -36,7 +36,6 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	exchange: Exchange;
 	marketsTriplet: Market[];
 	availableBalances: Balances;
-	showWarnings = false;
 	validateMarkets = true;
 	orderBooks: {
 		[key: string]: {
@@ -53,11 +52,10 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 
 		params.bot.printProfileTime();
 
-		const {bot, markets, balances, showWarnings, validateMarkets, exchange, minimumsCorrectionTries} = {...params};
+		const {bot, markets, balances, validateMarkets, exchange, minimumsCorrectionTries} = {...params};
 
 		this.bot = bot;
 		this.exchange = exchange;
-		this.showWarnings = showWarnings;
 		this.validateMarkets = validateMarkets;
 		this.minimumsCorrectionTries = minimumsCorrectionTries || 1000;
 		this.validate(markets, balances);
@@ -113,7 +111,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 					markets[index].limits
 				);
 	
-				if(this.showWarnings && !isSufficient) {
+				if(this.bot.config.logWarnings && !isSufficient) {
 					log(
 						`\x1b[33mBalance ${balances.free[markets[index][quoteOrBase]]} ${markets[index].quote} under market ${markets[index].symbol} MIN ${markets[index].limits[isBuy ? 'cost' : 'amount'].min} ${isBuy ? 'cost' : 'amount'} limit\x1b[0m`
 					);
@@ -284,7 +282,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 
 				const firstSide = direction.orders[0] === 'buy';
 				do {
-					if(this.showWarnings && step > 1) {
+					if(this.bot.config.logAdditionalWarnings && step > 1) {
 						console.log("\x1b[33m%s\x1b[0m", `MINIMUMS CORRECTION (${step}. times)`);
 					}
 
@@ -477,7 +475,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	}
 
     calculateFeeFallback (fees, market, side, amount, price, takerOrMaker = 'taker') {
-		if(this.showWarnings) {
+		if(this.bot.config.logAdditionalWarnings) {
 			console.log("\x1b[33m%s\x1b[0m", `FEES CORRECTION ${market.symbol} (to correct: ${fees.cost} ${fees.currency})`);
 		}
 		return {

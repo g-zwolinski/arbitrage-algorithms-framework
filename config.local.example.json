@@ -1,0 +1,24 @@
+{
+    "profile": false,
+    "logDetails": true,
+    "logAdditionalDetails": true,
+    "logWarnings": false,
+    "logAdditionalWarnings": false,
+    "exchangesToWatch": ["binance"],
+    "orderBookLimit": 1000,
+    "exchangeOptions": {
+        "bleutrade": {},
+        "binance": {}
+    },
+    "keys": {
+        "bleutrade": {
+            "apiKey": "", 
+            "secret": ""
+        },
+        "binance": {
+            "apiKey": "", 
+            "secret": ""
+        }
+    },
+    "currenciesToWatch": ["ETH", "BTC", "BNB"]
+}

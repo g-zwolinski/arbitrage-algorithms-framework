@@ -6,10 +6,14 @@
       "moduleResolution": "node",
       "sourceMap": true,
       "outDir": "dist",
-      "resolveJsonModule": true
+      "resolveJsonModule": true,
+      "declaration": true
     },
     "lib": ["es2015"],
     "include": [
         "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/example.ts"
     ]
   }

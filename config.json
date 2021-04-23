@@ -2,6 +2,8 @@
     "profile": false,
     "logDetails": false,
     "logAdditionalDetails": false,
+    "logWarnings": false,
+    "logAdditionalWarnings": false,
     "exchangesToWatch": ["example"],
     "orderBookLimit": 1000,
     "exchangeOptions": {

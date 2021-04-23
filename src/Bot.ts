@@ -20,6 +20,8 @@ export interface BotConfig {
     profile: boolean;
     logDetails: boolean;
     logAdditionalDetails: boolean;
+    logWarnings: boolean;
+    logAdditionalWarnings:  boolean;
 
     // ccxt calculate_fees correction
     feesRate: number;
