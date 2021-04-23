@@ -53,7 +53,7 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
                         exchange.markets[element[2]]
                     ],
                     balances: bot.balances[key],
-                    showWarnings: bot.config.logDetails,
+                    showWarnings: bot.config.logAdditionalDetails,
                     validateMarkets: false
                 }),
                 () => {

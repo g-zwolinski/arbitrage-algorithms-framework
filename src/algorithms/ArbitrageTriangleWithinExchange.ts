@@ -9,8 +9,9 @@ import {AlgorithmCommonParams} from './Algorithm';
 import { BigNumber } from "bignumber.js";
 
 export interface ArbitrageTriangleWithinExchangeParams extends AlgorithmCommonParams {
-	exchange: Exchange,
-	validateMarkets: boolean
+	exchange: Exchange;
+	validateMarkets: boolean;
+	minimumsCorrectionTries?: number;
 }
 
 interface DIRECTIONS_SEQUENCE {
@@ -45,26 +46,26 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 	} = {};
 	// every minimum amount in every symbol
 	minimum: {amount: Amount[], cost: Amount[], market: string}[];
+	minimumsCorrectionTries; 
 
 	constructor(params: ArbitrageTriangleWithinExchangeParams) {
 		super();
+
 		params.bot.printProfileTime();
 
-		const {bot, markets, balances, showWarnings, validateMarkets, exchange} = {...params};
+		const {bot, markets, balances, showWarnings, validateMarkets, exchange, minimumsCorrectionTries} = {...params};
+
 		this.bot = bot;
 		this.exchange = exchange;
 		this.showWarnings = showWarnings;
 		this.validateMarkets = validateMarkets;
-        // try {
-			this.validate(markets, balances);
-        // } catch (err) {
-        //     log(errorLogTemplate(err));
-		// }
-		// this.bot.printProfileTime();
+		this.minimumsCorrectionTries = minimumsCorrectionTries || 1000;
+		this.validate(markets, balances);
 		this.marketsTriplet = markets;
 		this.availableBalances = balances;
-
 		this.onRun = this.onArbitrageTriangleWithinExchangeRun;
+
+		params.bot.printProfileTime();
 	}
 
 	static validateMarkets(markets: Market[]) {
@@ -275,6 +276,64 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 			await this.getOrderBooks();
 
 			this.availableDirections.forEach((direction, directionIndex) => {
+				// @TODO: add minus/plus fees
+
+				let minAB, qunatityAB, totalAB, minAC, minBC, qunatityBC, totalBC, qunatityAC, totalAC, feesAB, feesBC, feesAC, result;
+				let step = 1;
+				minAB = Math.max(this.marketsTriplet[0].limits.amount.min, this.marketsTriplet[2].limits.amount.min);
+
+				const firstSide = direction.orders[0] === 'buy';
+				do {
+					if(this.showWarnings && step > 1) {
+						console.log("\x1b[33m%s\x1b[0m", `MINIMUMS CORRECTION (${step}. times)`);
+					}
+
+					if(firstSide) {
+						qunatityAB = new BigNumber(minAB).multipliedBy(step + this.bot.config.feesRate); // [A], market A/B 
+						totalAB = this.getCost(this.marketsTriplet[0], qunatityAB, bidsOrAsksByBuyOrSell[direction.orders[0]] as BidsOrAsks); // [B], market A/B 
+						feesAB = this.fees(this.marketsTriplet[0], qunatityAB.toNumber(), totalAB.price, direction.orders[0]);
+
+						qunatityBC = totalAB.total; // [B], market B/C 
+						totalBC = this.getCost(this.marketsTriplet[1], qunatityBC, bidsOrAsksByBuyOrSell[direction.orders[1]] as BidsOrAsks); // [C], market B/C 
+						feesBC = this.fees(this.marketsTriplet[1], qunatityBC.toNumber(), totalBC.price, direction.orders[1]);
+
+						qunatityAC = new BigNumber(minAB).multipliedBy(step).minus(feesAB.cost); // [A], market A/C
+						totalAC = this.getCost(this.marketsTriplet[2], qunatityAC, bidsOrAsksByBuyOrSell[direction.orders[2]] as BidsOrAsks); // [C], market A/C
+						feesAC = this.fees(this.marketsTriplet[2], qunatityAC.toNumber(), totalAC.price, direction.orders[2]);
+
+						// results in C
+						result = totalAC.total.minus(totalBC.total).minus(feesAC.cost);
+					} else {
+
+						qunatityAC = new BigNumber(minAB).multipliedBy(step + this.bot.config.feesRate); // [A], market A/C
+						totalAC = this.getCost(this.marketsTriplet[2], qunatityAC, bidsOrAsksByBuyOrSell[direction.orders[2]] as BidsOrAsks); // [C], market A/C
+						feesAC = this.fees(this.marketsTriplet[2], qunatityAC.toNumber(), totalAC.price, direction.orders[2]);
+	
+						qunatityAB = new BigNumber(minAB).multipliedBy(step).minus(feesAC.cost); // [A], market A/B 
+						totalAB = this.getCost(this.marketsTriplet[0], qunatityAB, bidsOrAsksByBuyOrSell[direction.orders[0]] as BidsOrAsks); // [B], market A/B 
+						feesAB = this.fees(this.marketsTriplet[0], qunatityAB.toNumber(), totalAB.price, direction.orders[0]);
+						
+	
+						qunatityBC = totalAB.total.minus(feesAB.cost); // [B], market B/C 
+						totalBC = this.getCost(this.marketsTriplet[1], qunatityBC, bidsOrAsksByBuyOrSell[direction.orders[1]] as BidsOrAsks); // [C], market B/C 
+						feesBC = this.fees(this.marketsTriplet[1], qunatityBC.toNumber(), totalBC.price, direction.orders[1]);
+	
+						// results in C
+						result = totalBC.total.minus(totalAC.total).minus(feesBC.cost);
+
+					}
+					step = step + 1;
+				} while((
+					qunatityAB.isLessThan(this.marketsTriplet[0].limits.amount.min)
+					|| qunatityBC.isLessThan(this.marketsTriplet[1].limits.amount.min)
+					|| qunatityAC.isLessThan(this.marketsTriplet[2].limits.amount.min)
+					|| totalAB.total < this.marketsTriplet[0].limits.cost.min
+					|| totalBC.total < this.marketsTriplet[1].limits.cost.min
+					|| totalAC.total < this.marketsTriplet[2].limits.cost.min
+				) && step < this.minimumsCorrectionTries)
+
+				// @TODO: add fees to AB or AC (depends on ordersDirection)
+
 				this.bot.config.logAdditionalDetails && console.table({
 					' ': {
 						'direction (max depth)': '-',
@@ -313,63 +372,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 						'price min': this.marketsTriplet[2].limits.price.min
 					}
 				});
-
-				// @TODO: add minus/plus fees
-
-				let minAB, qunatityAB, totalAB, minAC, minBC, qunatityBC, totalBC, qunatityAC, totalAC, feesAB, feesBC, feesAC, result;
-				let step = 1;
-				minAB = Math.max(this.marketsTriplet[0].limits.amount.min, this.marketsTriplet[2].limits.amount.min);
-
-				const firstSide = direction.orders[0] === 'buy';
-				do {
-					if(this.showWarnings && step > 1) {
-						console.log("\x1b[33m%s\x1b[0m", `MINIMUMS CORRECTION (%{step}. times)`);
-					}
-
-					if(firstSide) {
-						qunatityAB = new BigNumber(minAB).multipliedBy(step + this.bot.config.feesRate); // [A], market A/B 
-						totalAB = this.getCost(this.marketsTriplet[0], qunatityAB, bidsOrAsksByBuyOrSell[direction.orders[0]] as BidsOrAsks); // [B], market A/B 
-						feesAB = this.fees(this.marketsTriplet[0], qunatityAB.toNumber(), totalAB.price, direction.orders[0]);
-
-						qunatityBC = totalAB.total; // [B], market B/C 
-						totalBC = this.getCost(this.marketsTriplet[1], qunatityBC, bidsOrAsksByBuyOrSell[direction.orders[1]] as BidsOrAsks); // [C], market B/C 
-						feesBC = this.fees(this.marketsTriplet[1], qunatityBC.toNumber(), totalBC.price, direction.orders[1]);
-
-						qunatityAC = new BigNumber(minAB).minus(feesAB.cost); // [A], market A/C
-						totalAC = this.getCost(this.marketsTriplet[2], qunatityAC, bidsOrAsksByBuyOrSell[direction.orders[2]] as BidsOrAsks); // [C], market A/C
-						feesAC = this.fees(this.marketsTriplet[2], qunatityAC.toNumber(), totalAC.price, direction.orders[2]);
-
-						// results in C
-						result = totalAC.total.minus(totalBC.total).minus(feesAC.cost);
-					} else {
-
-						qunatityAC = new BigNumber(minAB).multipliedBy(step + this.bot.config.feesRate); // [A], market A/C
-						totalAC = this.getCost(this.marketsTriplet[2], qunatityAC, bidsOrAsksByBuyOrSell[direction.orders[2]] as BidsOrAsks); // [C], market A/C
-						feesAC = this.fees(this.marketsTriplet[2], qunatityAC.toNumber(), totalAC.price, direction.orders[2]);
-	
-						qunatityAB = new BigNumber(minAB).minus(feesAC.cost); // [A], market A/B 
-						totalAB = this.getCost(this.marketsTriplet[0], qunatityAB, bidsOrAsksByBuyOrSell[direction.orders[0]] as BidsOrAsks); // [B], market A/B 
-						feesAB = this.fees(this.marketsTriplet[0], qunatityAB.toNumber(), totalAB.price, direction.orders[0]);
-						
-	
-						qunatityBC = totalAB.total.minus(feesAB.cost); // [B], market B/C 
-						totalBC = this.getCost(this.marketsTriplet[1], qunatityBC, bidsOrAsksByBuyOrSell[direction.orders[1]] as BidsOrAsks); // [C], market B/C 
-						feesBC = this.fees(this.marketsTriplet[1], qunatityBC.toNumber(), totalBC.price, direction.orders[1]);
-	
-						// results in C
-						result = totalBC.total.minus(totalAC.total).minus(feesBC.cost);
-
-					}
-					step = step + 1;
-				} while(!(
-					qunatityAB.isLessThan(this.marketsTriplet[0].limits.amount.min)
-					|| qunatityBC.isLessThan(this.marketsTriplet[1].limits.amount.min)
-					|| qunatityAC.isLessThan(this.marketsTriplet[2].limits.amount.min)
-					|| totalAB.total < this.marketsTriplet[0].limits.cost.min
-					|| totalBC.total < this.marketsTriplet[1].limits.cost.min
-					|| totalAC.total < this.marketsTriplet[2].limits.cost.min
-				) || step > 100)
-
+				
 				this.bot.config.logDetails && console.table({
 					[this.marketsTriplet[0].symbol]: {
 						direction: direction.orders[0],
@@ -400,7 +403,7 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 				const resultString = `${result.toString()} ${this.marketsTriplet[1].quote}`.padStart(100, ' ');
 				if(result.isGreaterThan(0)) {
 					console.log("\x1b[42m\x1b[37m%s\x1b[0m\x1b[0m", resultString);
-					// @TODO: make order (then check again)
+					// @TODO: check balances, make order (then check again if there iss still arbitrage)
 				} else if(!result.isEqualTo(0)) {
 					console.log("\x1b[41m\x1b[37m%s\x1b[0m\x1b[0m", resultString);
 				} else {
@@ -411,8 +414,9 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 		})
 	};
 
-	lazyCheckArbitrage() {
-
+	makeOrder() {
+		// @TODO
+		// this.bot.makeOrder();
 	}
 
 	getCost(market: Market, amount: BigNumber, ordersbookSide: BidsOrAsks): {total: BigNumber; price: number} {
@@ -481,10 +485,6 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 			cost: floatRound(amount * price * this.exchange.markets[market.symbol].taker, market['precision']['price'], this.bot.config.feesRoundType)
 		}
     }
-
-	convert(amount, symbol, sourceMarket, targetMarket, orderType: OrderType) {
-		// check in both way (maybe in other direction it will be cheaper)
-	}
 
 	// check if balances ar bigger than mins
 
