@@ -9,7 +9,6 @@ Configuration
 ===================================
 ```
 {
-  
     keys: {
         [key: string /* exchange */]: {
             apiKey: string;
@@ -237,3 +236,12 @@ m	m	t	t	m
 t	t	m	m	m *
 ```
 @TODO: GET EVERY POSSIBLE DIRECTION (* take into account bids/asks variation)
+
+Proxy
+===================================
+To start proxy on another server:
+```
+node src/misc/proxy PORT HOST_IP
+```
+
+Then add IP in config proxies list.
