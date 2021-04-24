@@ -5,7 +5,7 @@ export interface AlgorithmCommonParams {
 	bot: Bot;
 	markets: Market[];
 	balances: Balances;
-	showWarnings: boolean;
+	logWarnings: boolean;
 }
 
 export default class Algorithm {

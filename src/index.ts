@@ -1,6 +1,6 @@
 import Algorithm from "./algorithms/Algorithm";
 export * from "./Bot";
-export * from "./config";
+export * from "./common/config";
 export * from "./algorithms/Algorithm";
 export * from "./algorithms/ArbitrageBetweenExchanges";
 export * from "./algorithms/ArbitrageTriangleWithinExchange";

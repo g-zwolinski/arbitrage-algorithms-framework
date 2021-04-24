@@ -387,8 +387,6 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 						// @TODO: check balances, make order (then check again if there iss still arbitrage)
 						// @TODO: check minimums again 
 
-						success = false;
-
 						if (!reachedMinimum) {
 
 						} else {
@@ -408,6 +406,8 @@ export default class ArbitrageTriangleWithinExchange extends Algorithm {
 					} else {
 						console.log("\x1b[44m\x1b[37m%s\x1b[0m\x1b[0m", resultString);
 					}
+					
+					success = false;
 				} while (success)
 			})
 			resolve(false);

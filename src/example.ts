@@ -1,7 +1,7 @@
 import ArbitrageTriangleWithinExchange, { ArbitrageTriangleWithinExchangeParams } from "./algorithms/ArbitrageTriangleWithinExchange";
 import Bot from "./Bot";
 import { errorLogTemplate, log } from "./common/helpers";
-import { config } from "./config";
+import { config } from "./common/config";
 import localConfig = require("./config.local.example.json");
 // ccxt.d.ts
 

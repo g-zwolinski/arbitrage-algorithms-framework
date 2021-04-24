@@ -96,9 +96,10 @@ Check `src/example.ts` for more details.
 
 Todo
 ===================================
+- "fluid" fees (depends on fees.currency, other than default)
 - use prepared error handler
 - bot method for placing orders with retries
-- WS adapter class compatible with ccxt
+- WS adapter class compatible with ccxt (for updating iterating elements in rl time, making orders, use with proxy?)
 - limits, precisions exceptions (per exchange, coin, exchange + coin and order side)
 - make triangle orders at once via proxy or one by one
 - fill order at once or chunk (depends on balance and/or agresivness)
