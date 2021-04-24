@@ -2,7 +2,7 @@
 For making trading bots on top of [CCXT](https://github.com/ccxt/ccxt/), with simple lifecycle. In TypeScript.
 
 <div style="text-align: center;">
-    <img src="https://github.com/g-zwolinski/arbitrage-algorithms-framework/blob/master/docs/example.png" alt="example">
+    <img src="https://github.com/g-zwolinski/arbitrage-algorithms-framework/blob/main/docs/example.png" alt="example">
 </div>
 
 Feel free to contribute. 
