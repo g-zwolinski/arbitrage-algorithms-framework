@@ -1,6 +1,6 @@
 {
   "name": "arbitrage-algorithms-framework",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "working prototype typescript framework for making arbitrage bots on cryptocurrencies exchanges, on top of ccxt",
   "main": "dist/src/index.js",
   "types": "./dist/src/index.d.ts",
