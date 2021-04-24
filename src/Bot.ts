@@ -164,8 +164,8 @@ export default class Bot {
         return exchange.fetchBalance();
     }
 
-    setExchangeProxy(exchange: Exchange) {
-        this.proxyIndex = this.proxyIndex + 1;
+    setExchangeProxy(exchange: Exchange, index: number | null = null) {
+        this.proxyIndex = index === null ? this.proxyIndex + 1 : index;
         this.proxyIndex = this.proxyIndex === this.config.proxies.length ? 0 : this.proxyIndex;
         exchange.proxy = this.config.proxies[this.proxyIndex];
     }

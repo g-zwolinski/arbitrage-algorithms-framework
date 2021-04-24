@@ -19,24 +19,35 @@ export default class Telegram {
 
     constructor(params: TelegramParams) {
 		const {token, startPhrase, stopPhrase, chats, logErrors} = {...params};
+
         this.token = token;
         this.startPhrase = startPhrase;
         this.stopPhrase = stopPhrase;
         this.chats = chats;
         this.logErrors = logErrors;
 
-        this.telegramBot = new TelegramBot(token, {polling: true});
+        if(!this.token) {
+            // @TODO: format
+            if(this.logErrors) console.log('Cannot start Telegram notifications without token');
+            return;
+        }
+
+        this.init();
+    }
+
+    init() {
+        this.telegramBot = new TelegramBot(this.token, {polling: true});
         
-        this.telegramBot.onText(startPhrase, (msg) => {
+        this.telegramBot.onText(this.startPhrase, (msg) => {
             this.addChat(msg.chat.id)
             let chatId = msg.chat.id
-            this.telegramBot.sendMessage(chatId, 'Notifications started.')
+            this.telegramBot.sendMessage(chatId, 'Notifications started')
         })
         
-        this.telegramBot.onText(stopPhrase, (msg) => {
+        this.telegramBot.onText(this.stopPhrase, (msg) => {
             this.removeChat(msg.chat.id)
             let chatId = msg.chat.id
-            this.telegramBot.sendMessage(chatId, 'Notifications stopped.')
+            this.telegramBot.sendMessage(chatId, 'Notifications stopped')
         })
         
         this.telegramBot.on('message', (msg) => {
@@ -46,17 +57,20 @@ export default class Telegram {
     }
 
     addChat = (id) => {
+        if (!this.token) return;
         if (this.chats.indexOf(id) >= 0) return;
         this.chats.push(id);
     } 
 
     removeChat = (id) => {
+        if (!this.token) return;
         const index = this.chats.indexOf(id)
         if (index < 0) return;
         this.chats.splice(index, 1);
     }
 
     sendMessage = (message) => {
+        if (!this.token) return;
         if (this.chats.length === 0) return;
         this.chats.forEach(chat => {
             this.telegramBot

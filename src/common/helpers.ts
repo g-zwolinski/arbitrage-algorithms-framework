@@ -1,7 +1,7 @@
 export const errorLogTemplate = (e: Error) => `\x1b[31m${e.name} ${e.message}\x1b[0m`;
 
-export function log(message, type: 'log' | 'warn' = 'log', toggle = true) {
-	if (!toggle) { return; }
+export function log(message, type: 'log' | 'warn' = 'log', run = true) {
+	if (!run) { return; }
 	console[type](message);
 }
 

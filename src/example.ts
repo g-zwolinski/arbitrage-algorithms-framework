@@ -39,7 +39,6 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
 
             log(`\x1b[32mFound ${validatedTriplets.length} ArbitrageTriangleWithinExchange triplets on ${exchange.id}\x1b[0m`);
             console.table(validatedTriplets)
-            // validatedTriplets.forEach((triplet, index) => log([index + 1, ...triplet].join(' ')));
 
             bot.cycle(
                 validatedTriplets, 
@@ -66,11 +65,6 @@ function startArbitrageTriangleWithinExchangeAlgorithm() {
         }
     });
 }
-
-// algorithms todo
-// 2 markets per exchange, 1 transfer between exchanges
-// 2 markets on 1. exchange, 1 on 2. exchange, 1 transfer between exchanges
-// 1 market per exchange, 1 transfer between exchanges
 
 // @TODO: add checking
 // {
