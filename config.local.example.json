@@ -1,9 +1,12 @@
 {
+    "makeOrders": false,
     "profile": false,
     "logDetails": true,
     "logAdditionalDetails": true,
     "logWarnings": false,
     "logAdditionalWarnings": false,
+    "logError": false,
+    "logErrorDetails": false,
     "exchangesToWatch": ["binance"],
     "orderBookLimit": 1000,
     "exchangeOptions": {
@@ -20,5 +23,23 @@
             "secret": ""
         }
     },
-    "currenciesToWatch": ["ETH", "BTC", "BNB"]
+    "currenciesToWatch": ["ETH", "BTC", "BNB"],
+    "orderOptionsByExchange": {
+        "binance": {
+            "adjustForTimeDifference": true
+        }
+    },
+    "defaultOrderOptions": {},
+    "enableProxy": false,
+    "changeProxyAfterEveryOrder": false,
+    "changeProxyAfterAnyNetworkError": false,
+    "parallelOrders": false,
+    "proxies": [],
+    "telegram": {
+        "token": "",
+        "startPhrase": "",
+        "stopPhrase": "",
+        "chats": [],
+        "logErrors": false
+    }
 }

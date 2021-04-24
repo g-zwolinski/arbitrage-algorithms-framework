@@ -1,6 +1,20 @@
 # Arbitrage Algorithms Framework Prototype
 on top of CCXT
 
+todo:
+- proxies list in config
+- proxy halper
+- bot method for telegram notifications
+- bot method for placing orders with retries
+- limits, precisions exceptions (per exchange, coin, exchange + coin and order side)
+- make triangle orders at once via proxy or one by one
+- fill order at once or chunk  (depend on balance and/or "agressivnes")
+- handle other orders types and fees (precision/round types)
+- WS adapter class compatible with ccxt
+- ArbitrageBetweenExchanges
+- ArbitrageTriangularBetweenExchanges
+- readme
+
 ArbitrageTriangleWithinExchange
 ===================================
 ```

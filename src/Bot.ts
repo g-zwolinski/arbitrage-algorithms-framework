@@ -1,6 +1,8 @@
 import { errorLogTemplate, log, validationException } from './common/helpers';
 import ccxt, { Balances, Exchange } from 'ccxt';
 import Algorithm from './algorithms/Algorithm';
+import Telegram, { TelegramParams } from './misc/Telegram';
+import { BUY, SELL } from './common/constants';
 
 export interface BotConfig {
     keys: {
@@ -17,29 +19,34 @@ export interface BotConfig {
     defaultExchangeOptions: any;
     currenciesToWatch: string[];
 
+    makeOrders: boolean;
+    parallelOrders: boolean;
+
     profile: boolean;
     logDetails: boolean;
     logAdditionalDetails: boolean;
     logWarnings: boolean;
-    logAdditionalWarnings:  boolean;
+    logAdditionalWarnings: boolean;
+    logError: boolean;
+    logErrorDetails: boolean;
 
     // ccxt calculate_fees correction
     feesRate: number;
     zeroesFeesCorrection: boolean;
     correctAllFees: boolean;
     feesRoundType: 'ceil' | 'floor' |'round';
-}
 
-interface ExchangeBalance {
-    free: {
-        [key: string]: number;
+    orderOptionsByExchange: {
+        [key: string /* exchange */]: any
     };
-    used: {
-        [key: string]: number;
-    };
-    total: {
-        [key: string]: number;
-    };
+    defaultOrderOptions: any;
+
+    enableProxy: boolean;
+    changeProxyAfterEveryOrder: boolean;
+    changeProxyAfterAnyNetworkError: boolean;
+    proxies: string[];
+
+    telegram?: TelegramParams
 }
 
 export default class Bot {
@@ -51,9 +58,14 @@ export default class Bot {
         [key: string]: Balances
     } = {};
     cycleIndex = 0;
+    proxyIndex = 0;
+
+    telegram: Telegram;
 
 	constructor(config: BotConfig) {
         this.config = config;
+        this.telegram = new Telegram(this.config.telegram);
+        this.telegram.sendMessage('Bot started');
     }
     
 	printProfileTime() {
@@ -151,4 +163,32 @@ export default class Bot {
     fetchBalance(exchange: Exchange) {
         return exchange.fetchBalance();
     }
+
+    setExchangeProxy(exchange: Exchange) {
+        this.proxyIndex = this.proxyIndex + 1;
+        this.proxyIndex = this.proxyIndex === this.config.proxies.length ? 0 : this.proxyIndex;
+        exchange.proxy = this.config.proxies[this.proxyIndex];
+    }
+
+	makeOrder(exchange: Exchange, market, side, amount, price, additionalParams = {}) {
+		// @wip
+		if (!this.config.makeOrders) false;
+		// @TODO: send Telegram notification after order
+		// @TODO: setExchangeProxy if config.changeProxyAfterEveryOrder
+		if (side === BUY) {
+			return exchange.createLimitBuyOrder(market, amount, price, {
+				...additionalParams,
+				...this.config.defaultOrderOptions,
+				...this.config.orderOptionsByExchange[exchange.id]
+			});
+		}
+		if (side === SELL) {
+			return exchange.createLimitSellOrder(market, amount, price, {
+				...additionalParams,
+				...this.config.defaultOrderOptions,
+				...this.config.orderOptionsByExchange[exchange.id]
+			});
+		}
+		return false;
+	}
 }

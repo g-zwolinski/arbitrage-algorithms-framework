@@ -1,9 +1,12 @@
 {
+    "makeOrders": false,
     "profile": false,
     "logDetails": false,
     "logAdditionalDetails": false,
     "logWarnings": false,
     "logAdditionalWarnings": false,
+    "logError": false,
+    "logErrorDetails": false,
     "exchangesToWatch": ["example"],
     "orderBookLimit": 1000,
     "exchangeOptions": {
@@ -24,5 +27,19 @@
     "feesRate": 0.001,
     "zeroesFeesCorrection": true,
     "correctAllFees": false,
-    "feesRoundType": "ceil"
+    "feesRoundType": "ceil",
+    "orderOptionsByExchange": {},
+    "defaultOrderOptions": {},
+    "parallelOrders": false,
+    "enableProxy": false,
+    "changeProxyAfterEveryOrder": false,
+    "changeProxyAfterAnyNetworkError": false,
+    "proxies": [],
+    "telegram": {
+        "token": "",
+        "startPhrase": "",
+        "stopPhrase": "",
+        "chats": [],
+        "logErrors": false
+    }
 }

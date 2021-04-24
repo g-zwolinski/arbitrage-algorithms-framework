@@ -8,7 +8,7 @@ export default {
 } as BotConfig
 
 export const config = (config: any) => ({
-    ...config,
     ...defaultConfig,
+    ...config,
     // ...(localConfig ?? {})
 }) as BotConfig

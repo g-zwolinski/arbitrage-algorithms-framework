@@ -2,7 +2,7 @@ import ArbitrageTriangleWithinExchange, { ArbitrageTriangleWithinExchangeParams 
 import Bot from "./Bot";
 import { errorLogTemplate, log } from "./common/helpers";
 import { config } from "./config";
-import localConfig = require("./../config.local.example.json");
+import localConfig = require("./../config.local.json");
 // ccxt.d.ts
 
 process
@@ -14,7 +14,7 @@ process
     process.exit(1);
 });
 
-// add triggering by socket (additional lib per exchange, compatible with cctx)
+// add triggering by socket (additional lib per exchange, compatible with ccxt)
 // crawl over markets by default
 
 // @TODO: consider:
