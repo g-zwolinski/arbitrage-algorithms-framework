@@ -114,6 +114,7 @@ Proxy
 To start proxy on another server:
 ```
 npm i arbitrage-algorithms-framework
+npm i -g cors-anywhere
 node node_modules/arbitrage-algorithms-framework/misc/proxy.js PORT HOST
 ```
 
