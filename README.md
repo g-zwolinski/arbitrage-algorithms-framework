@@ -5,6 +5,8 @@ For making trading bots on top of [CCXT](https://github.com/ccxt/ccxt/), with si
     <img src="https://github.com/g-zwolinski/arbitrage-algorithms-framework/blob/master/docs/example.png" alt="example">
 </div>
 
+Feel free to contribute. 
+
 Configuration
 ===================================
 ```
@@ -106,6 +108,16 @@ Todo
 - handle other ordersand fees  types (eg. oco, precision rounding types)
 - ignore (exchange, market, coin) lists
 - readme, docs
+
+Proxy
+===================================
+To start proxy on another server:
+```
+npm i arbitrage-algorithms-framework
+node node_modules/arbitrage-algorithms-framework/misc/proxy.js PORT HOST
+```
+
+Then add HOST:PORT in config proxies list.
 
 ArbitrageTriangleWithinExchange
 ===================================
@@ -236,12 +248,3 @@ m	m	t	t	m
 t	t	m	m	m *
 ```
 @TODO: GET EVERY POSSIBLE DIRECTION (* take into account bids/asks variation)
-
-Proxy
-===================================
-To start proxy on another server:
-```
-node src/misc/proxy PORT HOST_IP
-```
-
-Then add IP in config proxies list.

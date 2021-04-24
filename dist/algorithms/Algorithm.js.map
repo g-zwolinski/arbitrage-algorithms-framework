@@ -1,0 +1,1 @@
+{"version":3,"file":"Algorithm.js","sourceRoot":"","sources":["../../src/algorithms/Algorithm.ts"],"names":[],"mappings":";;;;;;;;;;;AAUA,MAAqB,SAAS;IAA9B;QACC,UAAK,GAAkC,GAAG,EAAE,CAAC,IAAI,OAAO,CAAC,GAAG,EAAE,CAAC,KAAK,CAAC,CAAC;QAEtE,QAAG,GAAG,CAAO,MAAY,EAAoB,EAAE;YAC9C,OAAO,MAAM,IAAI,CAAC,KAAK,CAAC,MAAM,CAAC,CAAC;QACjC,CAAC,CAAA,CAAA;IACF,CAAC;CAAA;AAND,4BAMC"}
