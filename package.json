@@ -14,6 +14,12 @@
     "test": "npx jest"
   },
   "keywords": ["multiple exchanges", "bot", "algorithm", "arbitrage", "framework", "ccxt", "typescript", "ts", "cryptocurrency"],
+  "homepage": "https://github.com/g-zwolinski/arbitrage-algorithms-framework#readme",
+  "bugs": "https://github.com/g-zwolinski/arbitrage-algorithms-framework/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g-zwolinski/arbitrage-algorithms-framework"
+  },
   "author": "zvvolinski.g@gmail.com",
   "license": "ISC",
   "devDependencies": {
